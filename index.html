@@ -184,6 +184,15 @@
   .gift-item strong{ display:block; font-size:.85rem; color:#7e3a92; }
   .gift-item span{ font-size:.76rem; color:#8a6a5c; }
 
+  .sound-toggle{
+    position:fixed; top:14px; right:14px; z-index:60;
+    width:42px; height:42px; border-radius:50%; border:none;
+    background:rgba(255,255,255,.85); backdrop-filter:blur(4px);
+    box-shadow:0 3px 10px rgba(109,76,65,.25);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:1.1rem; color:#7e3a92;
+  }
+
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.001s !important; animation-iteration-count:1 !important; }
   }
@@ -196,6 +205,11 @@
 </video>
 <div class="bg-overlay"></div>
 <div class="decor" id="decor"></div>
+
+<audio id="bg-audio" loop preload="auto" style="display:none">
+  <source src="musica-fundo.mp3" type="audio/mpeg">
+</audio>
+<button type="button" class="sound-toggle" id="sound-toggle" aria-label="Ativar ou desativar música">🔇</button>
 
 <main>
   <div class="corner-bfly left"><svg width="26" height="26" viewBox="0 0 40 40"><use href="#bfly-shape"/></svg></div>
@@ -285,7 +299,7 @@
       </div>
       <div class="gift-item">
         <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M4 17l2-9h12l2 9M4 17h16M4 17v2h16v-2"/></svg></span>
-        <div><strong>Sapatos</strong><span>Tamanho nº 20</span></div>
+        <div><strong>Sapatos</strong><span>Tamanho nº 18</span></div>
       </div>
       <div class="gift-item">
         <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 9l2-4h12l2 4M12 9v11"/></svg></span>
@@ -381,6 +395,38 @@
     }
   }
   tick(); setInterval(tick, 1000);
+
+  // música de fundo baixinha, em loop, iniciando no primeiro toque/clique
+  (function(){
+    var audio = document.getElementById('bg-audio');
+    var btn = document.getElementById('sound-toggle');
+    audio.volume = 0.35;
+    var started = false;
+
+    function startAudio(){
+      if(started) return;
+      audio.play().then(function(){
+        started = true;
+        btn.textContent = '🔊';
+      }).catch(function(){
+        started = false; // navegador bloqueou, tenta de novo no próximo toque
+      });
+    }
+
+    // tenta tocar assim que a página carrega (funciona em alguns navegadores/casos)
+    startAudio();
+
+    // se o navegador bloquear, começa no primeiro toque/clique em qualquer lugar da página
+    document.addEventListener('click', startAudio, { once:true });
+    document.addEventListener('touchstart', startAudio, { once:true });
+
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(!started){ startAudio(); return; }
+      if(audio.paused){ audio.play(); btn.textContent = '🔊'; }
+      else { audio.pause(); btn.textContent = '🔇'; }
+    });
+  })();
 </script>
 
 </body>
